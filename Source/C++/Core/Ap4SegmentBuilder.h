@@ -60,12 +60,15 @@ public:
                        AP4_UI64        media_time_origin = 0);
     virtual ~AP4_SegmentBuilder();
     
-    // accessors
+    // getters
     AP4_UI32               GetTrackId()        { return m_TrackId;        }
     AP4_UI32               GetTimescale()      { return m_Timescale;      }
     AP4_UI64               GetMediaStartTime() { return m_MediaStartTime; }
     AP4_UI64               GetMediaDuration()  { return m_MediaDuration;  }
     AP4_Array<AP4_Sample>& GetSamples()        { return m_Samples;        }
+
+    // setters
+    void SetTimescale(AP4_UI32 timescale) { m_Timescale = timescale; }
     
     // methods
     virtual AP4_Result AddSample(AP4_Sample& sample);
