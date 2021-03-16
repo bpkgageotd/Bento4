@@ -55,6 +55,7 @@ AP4_DEFINE_DYNAMIC_CAST_ANCHOR(AP4_MpegSystemSampleDescription)
 AP4_DEFINE_DYNAMIC_CAST_ANCHOR(AP4_AvcSampleDescription)
 AP4_DEFINE_DYNAMIC_CAST_ANCHOR(AP4_HevcSampleDescription)
 AP4_DEFINE_DYNAMIC_CAST_ANCHOR(AP4_SubtitleSampleDescription)
+AP4_DEFINE_DYNAMIC_CAST_ANCHOR(AP4_VideoConfigurationBox)
 
 /*----------------------------------------------------------------------
 |  AP4_GetFormatName
@@ -312,7 +313,7 @@ AP4_AvcSampleDescription::AP4_AvcSampleDescription(AP4_UI32     format,
                                                    const AP4_Array<AP4_DataBuffer>& sequence_parameters,
                                                    const AP4_Array<AP4_DataBuffer>& picture_parameters) :
     AP4_SampleDescription(TYPE_AVC, format, NULL),
-    AP4_VideoSampleDescription(width, height, depth, compressor_name)
+    AP4_VideoConfigurationBox(width, height, depth, compressor_name)
 {
     m_AvccAtom = new AP4_AvccAtom(profile, 
                                   level, 
@@ -333,7 +334,7 @@ AP4_AvcSampleDescription::AP4_AvcSampleDescription(AP4_UI32            format,
                                                    const char*         compressor_name,
                                                    const AP4_AvccAtom* avcc) :
     AP4_SampleDescription(TYPE_AVC, format, NULL),
-    AP4_VideoSampleDescription(width, height, depth, compressor_name)
+    AP4_VideoConfigurationBox(width, height, depth, compressor_name)
 {
     if (avcc) {
         m_AvccAtom = new AP4_AvccAtom(*avcc);
@@ -354,7 +355,7 @@ AP4_AvcSampleDescription::AP4_AvcSampleDescription(AP4_UI32        format,
                                                    const char*     compressor_name,
                                                    AP4_AtomParent* details) :
     AP4_SampleDescription(TYPE_AVC, format, details),
-    AP4_VideoSampleDescription(width, height, depth, compressor_name),
+    AP4_VideoConfigurationBox(width, height, depth, compressor_name),
     m_AvccAtom(NULL)
 {
     AP4_AvccAtom* avcc = AP4_DYNAMIC_CAST(AP4_AvccAtom, m_Details.GetChild(AP4_ATOM_TYPE_AVCC));
@@ -411,7 +412,7 @@ AP4_HevcSampleDescription::AP4_HevcSampleDescription(AP4_UI32            format,
                                                      const char*         compressor_name,
                                                      const AP4_HvccAtom* hvcc) :
     AP4_SampleDescription(TYPE_HEVC, format, NULL),
-    AP4_VideoSampleDescription(width, height, depth, compressor_name)
+    AP4_VideoConfigurationBox(width, height, depth, compressor_name)
 {
     if (hvcc) {
         m_HvccAtom = new AP4_HvccAtom(*hvcc);
@@ -432,7 +433,7 @@ AP4_HevcSampleDescription::AP4_HevcSampleDescription(AP4_UI32        format,
                                                      const char*     compressor_name,
                                                      AP4_AtomParent* details) :
     AP4_SampleDescription(TYPE_HEVC, format, details),
-    AP4_VideoSampleDescription(width, height, depth, compressor_name),
+    AP4_VideoConfigurationBox(width, height, depth, compressor_name),
     m_HvccAtom(NULL)
 {
     AP4_HvccAtom* hvcc = AP4_DYNAMIC_CAST(AP4_HvccAtom, m_Details.GetChild(AP4_ATOM_TYPE_HVCC));
@@ -476,7 +477,7 @@ AP4_HevcSampleDescription::AP4_HevcSampleDescription(AP4_UI32                   
                                                      const AP4_Array<AP4_DataBuffer>& picture_parameters,
                                                      AP4_UI08                         picture_parameters_completeness) :
     AP4_SampleDescription(TYPE_HEVC, format, NULL),
-    AP4_VideoSampleDescription(width, height, depth, compressor_name)
+    AP4_VideoConfigurationBox(width, height, depth, compressor_name)
 {
     m_HvccAtom = new AP4_HvccAtom(general_profile_space,
                                   general_tier_flag,

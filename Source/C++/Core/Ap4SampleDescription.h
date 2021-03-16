@@ -276,13 +276,23 @@ public:
 };
 
 /*----------------------------------------------------------------------
+|   AP4_ConfigurationBox
++---------------------------------------------------------------------*/
+class AP4_VideoConfigurationBox : public AP4_VideoSampleDescription {
+public:
+    AP4_IMPLEMENT_DYNAMIC_CAST_D(AP4_VideoConfigurationBox, AP4_VideoSampleDescription)
+    using AP4_VideoSampleDescription::AP4_VideoSampleDescription;
+    virtual const AP4_DataBuffer& GetRawBytes() const = 0;
+};
+
+/*----------------------------------------------------------------------
 |   AP4_AvcSampleDescription
 +---------------------------------------------------------------------*/
 class AP4_AvcSampleDescription : public AP4_SampleDescription,
-                                 public AP4_VideoSampleDescription
+                                 public AP4_VideoConfigurationBox
 {
 public:
-    AP4_IMPLEMENT_DYNAMIC_CAST_D2(AP4_AvcSampleDescription, AP4_SampleDescription, AP4_VideoSampleDescription)
+    AP4_IMPLEMENT_DYNAMIC_CAST_D2(AP4_AvcSampleDescription, AP4_SampleDescription, AP4_VideoConfigurationBox)
 
     // constructors
     AP4_AvcSampleDescription(AP4_UI32            format, // avc1, avc2, avc3 or avc4
@@ -319,11 +329,11 @@ public:
     AP4_UI08 GetNaluLengthSize() const { return m_AvccAtom->GetNaluLengthSize(); }
     AP4_Array<AP4_DataBuffer>& GetSequenceParameters() {return m_AvccAtom->GetSequenceParameters(); }
     AP4_Array<AP4_DataBuffer>& GetPictureParameters() { return m_AvccAtom->GetPictureParameters(); }
-    const AP4_DataBuffer& GetRawBytes() const { return m_AvccAtom->GetRawBytes(); }
     
     // inherited from AP4_SampleDescription
     virtual AP4_Atom* ToAtom() const;
     virtual AP4_Result GetCodecString(AP4_String& codec);
+    const AP4_DataBuffer& GetRawBytes() const override { return m_AvccAtom->GetRawBytes(); }
     
     // static methods
     static const char* GetProfileName(AP4_UI08 profile) {
@@ -338,10 +348,10 @@ private:
 |   AP4_HevcSampleDescription
 +---------------------------------------------------------------------*/
 class AP4_HevcSampleDescription : public AP4_SampleDescription,
-                                  public AP4_VideoSampleDescription
+                                 public AP4_VideoConfigurationBox
 {
 public:
-    AP4_IMPLEMENT_DYNAMIC_CAST_D2(AP4_HevcSampleDescription, AP4_SampleDescription, AP4_VideoSampleDescription)
+    AP4_IMPLEMENT_DYNAMIC_CAST_D2(AP4_HevcSampleDescription, AP4_SampleDescription, AP4_VideoConfigurationBox)
 
     // constructors
     AP4_HevcSampleDescription(AP4_UI32            format, // hvc1 or hev1
@@ -405,11 +415,11 @@ public:
     AP4_UI08 GetTemporalIdNested()                 const { return m_HvccAtom->GetTemporalIdNested(); }
     AP4_UI08 GetNaluLengthSize()                   const { return m_HvccAtom->GetNaluLengthSize(); }
     const AP4_Array<AP4_HvccAtom::Sequence>& GetSequences() const { return m_HvccAtom->GetSequences(); }
-    const AP4_DataBuffer& GetRawBytes()            const { return m_HvccAtom->GetRawBytes(); }
     
     // inherited from AP4_SampleDescription
     virtual AP4_Atom* ToAtom() const;
     virtual AP4_Result GetCodecString(AP4_String& codec);
+    const AP4_DataBuffer& GetRawBytes()            const override { return m_HvccAtom->GetRawBytes(); }
     
     // static methods
     static const char* GetProfileName(AP4_UI08 profile_space, AP4_UI08 profile) {
