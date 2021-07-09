@@ -87,6 +87,7 @@
 #include "Ap4HvccAtom.h"
 #include "Ap4DvccAtom.h"
 #include "Ap4VpccAtom.h"
+#include "Ap4Av1cAtom.h"
 #include "Ap4Marlin.h"
 #include "Ap48bdlAtom.h"
 #include "Ap4Piff.h"
@@ -325,10 +326,23 @@ AP4_AtomFactory::CreateAtomFromStream(AP4_ByteStream& stream,
             atom = new AP4_HevcSampleEntry(type, size_32, stream, *this);
             break;
 
-          case AP4_ATOM_TYPE_ALAC:
+          case AP4_ATOM_TYPE_AV01:
+            atom = new AP4_Av1SampleEntry(type, size_32, stream, *this);
+            break;
+
           case AP4_ATOM_TYPE_AC_3:
+            atom = new AP4_Ac3SampleEntry(type, size_32, stream, *this);
+            break;
+
           case AP4_ATOM_TYPE_EC_3:
+            atom = new AP4_Eac3SampleEntry(type, size_32, stream, *this);
+            break;
+
           case AP4_ATOM_TYPE_AC_4:
+            atom = new AP4_Ac4SampleEntry(type, size_32, stream, *this);
+            break;
+
+          case AP4_ATOM_TYPE_ALAC:
           case AP4_ATOM_TYPE_DTSC:
           case AP4_ATOM_TYPE_DTSH:
           case AP4_ATOM_TYPE_DTSL:
@@ -341,7 +355,6 @@ AP4_AtomFactory::CreateAtomFromStream(AP4_ByteStream& stream,
           case AP4_ATOM_TYPE_VP08:
           case AP4_ATOM_TYPE_VP09:
           case AP4_ATOM_TYPE_VP10:
-          case AP4_ATOM_TYPE_AV01:
             atom = new AP4_VisualSampleEntry(type, size_32, stream, *this);
             break;
 
@@ -506,6 +519,7 @@ AP4_AtomFactory::CreateAtomFromStream(AP4_ByteStream& stream,
             break;
 
           case AP4_ATOM_TYPE_DVCC:
+          case AP4_ATOM_TYPE_DVVC:
             if (atom_is_large) return AP4_ERROR_INVALID_FORMAT;
             atom = AP4_DvccAtom::Create(size_32, stream);
             break;
@@ -513,6 +527,11 @@ AP4_AtomFactory::CreateAtomFromStream(AP4_ByteStream& stream,
           case AP4_ATOM_TYPE_VPCC:
             if (atom_is_large) return AP4_ERROR_INVALID_FORMAT;
             atom = AP4_VpccAtom::Create(size_32, stream);
+            break;
+
+          case AP4_ATOM_TYPE_AV1C:
+            if (atom_is_large) return AP4_ERROR_INVALID_FORMAT;
+            atom = AP4_Av1cAtom::Create(size_32, stream);
             break;
 
           case AP4_ATOM_TYPE_HVCE:

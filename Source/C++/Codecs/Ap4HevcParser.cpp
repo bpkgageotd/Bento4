@@ -105,6 +105,8 @@ AP4_HevcNalParser::NaluTypeName(unsigned int nalu_type)
         case 38: return "FD_NUT - Filler data";
         case 39: return "PREFIX_SEI_NUT - Supplemental enhancement information";
         case 40: return "SUFFIX_SEI_NUT - Supplemental enhancement information";
+        case 62: return "Dolby Vision RPU NAL units";
+        case 63: return "Dolby Vision EL NAL units";
         default: return NULL;
     }
 }
@@ -973,6 +975,16 @@ AP4_HevcVideoParameterSet::AP4_HevcVideoParameterSet() :
 }
 
 /*----------------------------------------------------------------------
+|   AP4_HevcVideoParameterSet::GetInfo
++---------------------------------------------------------------------*/
+void
+AP4_HevcVideoParameterSet::GetInfo(unsigned int& time_scale, unsigned int& num_units)
+{
+    time_scale = vps_time_scale;
+    num_units  = vps_num_units_in_tick;
+}
+
+/*----------------------------------------------------------------------
 |   AP4_HevcVideoParameterSet::Parse
 +---------------------------------------------------------------------*/
 AP4_Result
@@ -1324,6 +1336,10 @@ AP4_HevcFrameParser::Feed(const AP4_UI08* nal_unit,
             CheckIfAccessUnitIsCompleted(access_unit_info);
             AppendNalUnitData(nal_unit, nal_unit_size);
         } else if (nal_unit_type == AP4_HEVC_NALU_TYPE_SUFFIX_SEI_NUT){
+            AppendNalUnitData(nal_unit, nal_unit_size);
+        } else if (nal_unit_type == AP4_HEVC_NALU_TYPE_UNSPEC62) {
+            AppendNalUnitData(nal_unit, nal_unit_size);
+        } else if (nal_unit_type == AP4_HEVC_NALU_TYPE_UNSPEC63) {
             AppendNalUnitData(nal_unit, nal_unit_size);
         }
         DBG_PRINTF_0("\n");

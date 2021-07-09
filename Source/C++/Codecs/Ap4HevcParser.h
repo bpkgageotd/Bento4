@@ -90,6 +90,8 @@ const unsigned int AP4_HEVC_NALU_TYPE_RSV_NVCL44     = 44;
 const unsigned int AP4_HEVC_NALU_TYPE_RSV_NVCL45     = 45;
 const unsigned int AP4_HEVC_NALU_TYPE_RSV_NVCL46     = 46;
 const unsigned int AP4_HEVC_NALU_TYPE_RSV_NVCL47     = 47;
+const unsigned int AP4_HEVC_NALU_TYPE_UNSPEC62       = 62;
+const unsigned int AP4_HEVC_NALU_TYPE_UNSPEC63       = 63;
 
 const unsigned int AP4_HEVC_PPS_MAX_ID               = 63;
 const unsigned int AP4_HEVC_SPS_MAX_ID               = 15;
@@ -278,6 +280,7 @@ struct AP4_HevcVideoParameterSet {
     
     // methods
     AP4_Result Parse(const unsigned char* data, unsigned int data_size);
+    void GetInfo(unsigned int& time_scale, unsigned int& num_units);
 
     AP4_DataBuffer           raw_bytes;
     unsigned int             vps_video_parameter_set_id;
