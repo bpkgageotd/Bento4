@@ -68,7 +68,7 @@ main(int argc, char** argv)
     
     // instantiate a video segment builder or an audio sergment builder
     AP4_VideoSegmentBuilder* video_builder = NULL;
-    AP4_AacSegmentBuilder* audio_builder = NULL;
+    AP4_AacAdtsSegmentBuilder* audio_builder = NULL;
     AP4_FeedSegmentBuilder* feed_builder = NULL;
     if (!strcmp(argv[1], "h265")) {
         video_builder = new AP4_HevcSegmentBuilder(track_id, frames_per_second);
@@ -77,7 +77,7 @@ main(int argc, char** argv)
         video_builder = new AP4_AvcSegmentBuilder(track_id, frames_per_second);
         feed_builder = video_builder;
     } else if (!strcmp(argv[1], "aac")) {
-        audio_builder = new AP4_AacSegmentBuilder(track_id);
+        audio_builder = new AP4_AacAdtsSegmentBuilder(track_id);
         feed_builder = audio_builder;
     } else {
         fprintf(stderr, "ERROR: unsupported media type\n");

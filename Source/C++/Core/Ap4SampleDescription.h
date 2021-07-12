@@ -146,6 +146,7 @@ class AP4_SampleDescription
 
     // info
     virtual AP4_Result GetCodecString(AP4_String& codec);
+    virtual const AP4_DataBuffer& GetRawBytes() { return m_Dummy_Buf; };
 
     // factories
     virtual AP4_Atom* ToAtom() const;
@@ -154,6 +155,7 @@ class AP4_SampleDescription
     Type           m_Type;
     AP4_UI32       m_Format;
     AP4_AtomParent m_Details;
+    AP4_DataBuffer m_Dummy_Buf;
 };
 
 /*----------------------------------------------------------------------
@@ -287,23 +289,12 @@ public:
 };
 
 /*----------------------------------------------------------------------
-|   AP4_ConfigurationBox
-+---------------------------------------------------------------------*/
-class AP4_VideoConfigurationBox : public AP4_VideoSampleDescription {
-public:
-    AP4_IMPLEMENT_DYNAMIC_CAST_D(AP4_VideoConfigurationBox, AP4_VideoSampleDescription)
-    using AP4_VideoSampleDescription::AP4_VideoSampleDescription;
-    virtual const AP4_DataBuffer& GetRawBytes() const = 0;
-};
-
-/*----------------------------------------------------------------------
 |   AP4_AvcSampleDescription
 +---------------------------------------------------------------------*/
-class AP4_AvcSampleDescription : public AP4_SampleDescription,
-                                 public AP4_VideoConfigurationBox
+class AP4_AvcSampleDescription : public AP4_SampleDescription, public AP4_VideoSampleDescription
 {
 public:
-    AP4_IMPLEMENT_DYNAMIC_CAST_D2(AP4_AvcSampleDescription, AP4_SampleDescription, AP4_VideoConfigurationBox)
+    AP4_IMPLEMENT_DYNAMIC_CAST_D2(AP4_AvcSampleDescription, AP4_SampleDescription, AP4_VideoSampleDescription)
 
     // constructors
     AP4_AvcSampleDescription(AP4_UI32            format, // avc1, avc2, avc3 or avc4
@@ -350,7 +341,7 @@ public:
     // inherited from AP4_SampleDescription
     virtual AP4_Atom* ToAtom() const;
     virtual AP4_Result GetCodecString(AP4_String& codec);
-    const AP4_DataBuffer& GetRawBytes() const override { return m_AvccAtom->GetRawBytes(); }
+    const AP4_DataBuffer& GetRawBytes() override { return m_AvccAtom->GetRawBytes(); }
     
     // static methods
     static const char* GetProfileName(AP4_UI08 profile) {
@@ -396,11 +387,10 @@ private:
 /*----------------------------------------------------------------------
 |   AP4_HevcSampleDescription
 +---------------------------------------------------------------------*/
-class AP4_HevcSampleDescription : public AP4_SampleDescription,
-                                 public AP4_VideoConfigurationBox
+class AP4_HevcSampleDescription : public AP4_SampleDescription, AP4_VideoSampleDescription
 {
 public:
-    AP4_IMPLEMENT_DYNAMIC_CAST_D2(AP4_HevcSampleDescription, AP4_SampleDescription, AP4_VideoConfigurationBox)
+    AP4_IMPLEMENT_DYNAMIC_CAST_D2(AP4_HevcSampleDescription, AP4_SampleDescription, AP4_VideoSampleDescription)
 
     // constructors
     AP4_HevcSampleDescription(AP4_UI32            format, // hvc1 or hev1
@@ -468,7 +458,7 @@ public:
     // inherited from AP4_SampleDescription
     virtual AP4_Atom* ToAtom() const;
     virtual AP4_Result GetCodecString(AP4_String& codec);
-    const AP4_DataBuffer& GetRawBytes()            const override { return m_HvccAtom->GetRawBytes(); }
+    const AP4_DataBuffer& GetRawBytes() override { return m_HvccAtom->GetRawBytes(); }
     
     // static methods
     static const char* GetProfileName(AP4_UI08 profile_space, AP4_UI08 profile) {
@@ -699,6 +689,7 @@ public:
     // inherited from AP4_SampleDescription
     virtual AP4_Result GetCodecString(AP4_String& codec);
     AP4_Atom* ToAtom() const;
+    const AP4_DataBuffer& GetRawBytes() override;
 
     /**
      * For sample descriptions of MPEG-4 audio tracks (i.e GetObjectTypeId() 
@@ -706,6 +697,9 @@ public:
      * Type. For other sample descriptions, this method returns 0.
      */
     Mpeg4AudioObjectType GetMpeg4AudioObjectType() const;
+
+    private:
+    AP4_DataBuffer m_RawData;
 };
 
 /*----------------------------------------------------------------------

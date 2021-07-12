@@ -41,6 +41,7 @@
 #include "Ap4String.h"
 #include "Ap4Track.h"
 #include "Ap4SampleDescription.h"
+#include "Ap4Mp4AudioInfo.h"
 
 /*----------------------------------------------------------------------
 |   class references
@@ -194,14 +195,14 @@ protected:
 };
 
 /*----------------------------------------------------------------------
-|   AP4_AacSegmentBuilder
+|   AP4_AacAdtsSegmentBuilder
 +---------------------------------------------------------------------*/
-class AP4_AacSegmentBuilder : public AP4_FeedSegmentBuilder
+class AP4_AacAdtsSegmentBuilder : public AP4_FeedSegmentBuilder
 {
 public:
     // constructor
-    AP4_AacSegmentBuilder(AP4_UI32 track_id, AP4_UI64 media_time_origin = 0);
-    ~AP4_AacSegmentBuilder();
+    AP4_AacAdtsSegmentBuilder(AP4_UI32 track_id, AP4_UI64 media_time_origin = 0);
+    virtual ~AP4_AacAdtsSegmentBuilder();
     
     // AP4_SegmentBuilder methods
     virtual AP4_Result WriteInitSegment(AP4_ByteStream& stream);
@@ -215,6 +216,25 @@ protected:
     // members
     AP4_AdtsParser                  m_FrameParser;
     AP4_MpegAudioSampleDescription* m_SampleDescription;
+};
+
+class AP4_AacSegmentBuilder : public AP4_AacAdtsSegmentBuilder
+{
+public:
+    AP4_AacSegmentBuilder(AP4_UI32 track_id, AP4_UI64 media_time_origin = 0);
+    ~AP4_AacSegmentBuilder() = default;
+
+    // methods
+    AP4_Result Feed(const void* data,
+                    AP4_Size    data_size,
+                    AP4_Size&   bytes_consumed);
+
+    private:
+    bool m_DsiReceived{false};
+    AP4_Mp4AudioDecoderConfig m_DecConfig;
+    AP4_DataBuffer m_AdtsHeader;
+    AP4_DataBuffer m_FrameBuffer;
+    AP4_AacFrameInfo m_FrameInfo;
 };
 
 /*----------------------------------------------------------------------

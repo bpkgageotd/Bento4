@@ -666,9 +666,9 @@ AP4_HevcSegmentBuilder::WriteInitSegment(AP4_ByteStream& stream)
 }
 
 /*----------------------------------------------------------------------
-|   AP4_AacSegmentBuilder::AP4_AacSegmentBuilder
+|   AP4_AacAdtsSegmentBuilder::AP4_AacAdtsSegmentBuilder
 +---------------------------------------------------------------------*/
-AP4_AacSegmentBuilder::AP4_AacSegmentBuilder(AP4_UI32 track_id, AP4_UI64 media_time_origin) :
+AP4_AacAdtsSegmentBuilder::AP4_AacAdtsSegmentBuilder(AP4_UI32 track_id, AP4_UI64 media_time_origin) :
     AP4_FeedSegmentBuilder(AP4_Track::TYPE_AUDIO, track_id, media_time_origin),
     m_SampleDescription(NULL)
 {
@@ -676,18 +676,10 @@ AP4_AacSegmentBuilder::AP4_AacSegmentBuilder(AP4_UI32 track_id, AP4_UI64 media_t
 }
 
 /*----------------------------------------------------------------------
-|   AP4_AacSegmentBuilder::~AP4_AacSegmentBuilder
-+---------------------------------------------------------------------*/
-AP4_AacSegmentBuilder::~AP4_AacSegmentBuilder()
-{
-    delete m_SampleDescription;
-}
-
-/*----------------------------------------------------------------------
-|   AP4_AacSegmentBuilder::Feed
+|   AP4_AacAdtsSegmentBuilder::Feed
 +---------------------------------------------------------------------*/
 AP4_Result
-AP4_AacSegmentBuilder::Feed(const void* data,
+AP4_AacAdtsSegmentBuilder::Feed(const void* data,
                             AP4_Size    data_size,
                             AP4_Size&   bytes_consumed)
 {
@@ -753,10 +745,10 @@ AP4_AacSegmentBuilder::Feed(const void* data,
 }
 
 /*----------------------------------------------------------------------
-|   AP4_AacSegmentBuilder::WriteInitSegment
+|   AP4_AacAdtsSegmentBuilder::WriteInitSegment
 +---------------------------------------------------------------------*/
 AP4_Result
-AP4_AacSegmentBuilder::WriteInitSegment(AP4_ByteStream& stream)
+AP4_AacAdtsSegmentBuilder::WriteInitSegment(AP4_ByteStream& stream)
 {
     AP4_Result result;
     
@@ -818,6 +810,79 @@ AP4_AacSegmentBuilder::WriteInitSegment(AP4_ByteStream& stream)
     delete output_movie;
     
     return result;
+}
+
+/*----------------------------------------------------------------------
+|   AP4_AacSegmentBuilder::AP4_AacAdtsSegmentBuilder
++---------------------------------------------------------------------*/
+AP4_AacSegmentBuilder::AP4_AacSegmentBuilder(AP4_UI32 track_id, AP4_UI64 media_time_origin) :
+    AP4_AacAdtsSegmentBuilder(track_id, media_time_origin)
+{
+    m_Timescale = 0; // we will compute the real value when we get the first audio frame
+}
+
+/*----------------------------------------------------------------------
+|   AP4_AacAdtsSegmentBuilder::~AP4_AacAdtsSegmentBuilder
++---------------------------------------------------------------------*/
+AP4_AacAdtsSegmentBuilder::~AP4_AacAdtsSegmentBuilder()
+{
+    delete m_SampleDescription;
+}
+
+/*----------------------------------------------------------------------
+|   AP4_AacSegmentBuilder::Feed
++---------------------------------------------------------------------*/
+AP4_Result
+AP4_AacSegmentBuilder::Feed(const void* data,
+                            AP4_Size    data_size,
+                            AP4_Size&   bytes_consumed)
+{
+    bytes_consumed = 0;
+    AP4_Result result;
+    // First, get the DSI.
+    if (!m_DsiReceived) {
+        if (data_size == 2) {
+            m_DecConfig.Parse((AP4_UI08*) data, data_size);
+            m_AdtsHeader.SetDataSize(7);
+            auto aac_dsi = reinterpret_cast<char*>(m_AdtsHeader.UseData());
+            aac_dsi[0] = 0xFF;
+            aac_dsi[1] = 0xF1; // 0xF9 (MPEG2)
+            aac_dsi[2] = 0x40 | (m_DecConfig.m_SamplingFrequencyIndex << 2) | (m_DecConfig.m_ChannelConfiguration >> 2);
+            aac_dsi[6] = 0xFC;
+            bytes_consumed += 2;
+            m_DsiReceived = true;
+            return AP4_SUCCESS;
+        } else {
+            return AP4_FAILURE;
+        }
+    } else {
+        if (data != nullptr) {
+            m_FrameBuffer.SetBuffer((AP4_Byte*) data, data_size);
+            auto aac_dsi = reinterpret_cast<char*>(m_AdtsHeader.UseData());
+            aac_dsi[3] = ((m_DecConfig.m_ChannelConfiguration&0x3)<<6) | ((data_size+7) >> 11);
+            aac_dsi[4] = ((data_size+7) >> 3)&0xFF;
+            aac_dsi[5] = (((data_size+7) << 5)&0xFF) | 0x1F;
+            bytes_consumed += data_size;            
+            AP4_Size local_byte_consumed;
+            AP4_Byte* local_data = m_AdtsHeader.UseData();
+            AP4_Size local_data_size = m_AdtsHeader.GetDataSize();
+            do {
+                result = AP4_AacAdtsSegmentBuilder::Feed(local_data, local_data_size, local_byte_consumed);
+                local_data_size -= local_byte_consumed;
+                local_data += local_byte_consumed;
+            } while (AP4_SUCCEEDED(result) && local_data_size > 0);
+            local_data = m_FrameBuffer.UseData();
+            local_data_size = m_FrameBuffer.GetBufferSize();
+            do {
+                result = AP4_AacAdtsSegmentBuilder::Feed(local_data, local_data_size, local_byte_consumed);
+                local_data_size -= local_byte_consumed;
+                local_data += local_byte_consumed;
+            } while (AP4_SUCCEEDED(result) && local_data_size > 0);
+        } else {
+            return AP4_AacAdtsSegmentBuilder::Feed(data, data_size, bytes_consumed);
+        }
+    }
+    return AP4_SUCCESS;
 }
 
 /*----------------------------------------------------------------------

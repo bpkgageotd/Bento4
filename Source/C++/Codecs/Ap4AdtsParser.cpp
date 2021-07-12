@@ -224,25 +224,25 @@ AP4_AdtsParser::FindFrame(AP4_AacFrame& frame)
     
     /* check if we have enough data to peek at the next header */
     available = m_Bits.GetBytesAvailable();
-    if (available >= adts_header.m_FrameLength+AP4_ADTS_HEADER_SIZE) {
-        // enough to peek at the header of the next frame
-        unsigned char peek_raw_header[AP4_ADTS_HEADER_SIZE];
+    // if (available >= adts_header.m_FrameLength+AP4_ADTS_HEADER_SIZE) {
+    //     // enough to peek at the header of the next frame
+    //     unsigned char peek_raw_header[AP4_ADTS_HEADER_SIZE];
 
-        m_Bits.SkipBytes(adts_header.m_FrameLength);
-        m_Bits.PeekBytes(peek_raw_header, AP4_ADTS_HEADER_SIZE);
-        m_Bits.SkipBytes(-((int)adts_header.m_FrameLength));
+    //     m_Bits.SkipBytes(adts_header.m_FrameLength);
+    //     m_Bits.PeekBytes(peek_raw_header, AP4_ADTS_HEADER_SIZE);
+    //     m_Bits.SkipBytes(-((int)adts_header.m_FrameLength));
 
-        /* check the header */
-        AP4_AdtsHeader peek_adts_header(peek_raw_header);
-        result = peek_adts_header.Check();
-        if (AP4_FAILED(result)) goto fail;
+    //     /* check the header */
+    //     AP4_AdtsHeader peek_adts_header(peek_raw_header);
+    //     result = peek_adts_header.Check();
+    //     if (AP4_FAILED(result)) goto fail;
 
-        /* check that the fixed part of this header is the same as the */
-        /* fixed part of the previous header                           */
-        if (!AP4_AdtsHeader::MatchFixed(peek_raw_header, raw_header)) {
-            goto fail;
-        }
-    } else if (available < adts_header.m_FrameLength || (m_Bits.m_Flags & AP4_BITSTREAM_FLAG_EOS) == 0) {
+    //     /* check that the fixed part of this header is the same as the */
+    //     /* fixed part of the previous header                           */
+    //     if (!AP4_AdtsHeader::MatchFixed(peek_raw_header, raw_header)) {
+    //         goto fail;
+    //     }
+    if (available < adts_header.m_FrameLength) {
         // not enough for a frame, or not at the end (in which case we'll want to peek at the next header)
         return AP4_ERROR_NOT_ENOUGH_DATA;
     }
