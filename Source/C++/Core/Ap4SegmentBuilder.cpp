@@ -851,6 +851,23 @@ AP4_AacSegmentBuilder::Feed(const void* data,
             aac_dsi[6] = 0xFC;
             bytes_consumed += 2;
             m_DsiReceived = true;
+            if (!m_SampleDescription) {
+                // create a sample description for our samples
+                AP4_DataBuffer dsi;
+                dsi.SetData((AP4_Byte*) data, 2);
+                m_SampleDescription =
+                    new AP4_MpegAudioSampleDescription(
+                    AP4_OTI_MPEG4_AUDIO,   // object type
+                    (AP4_UI32)m_DecConfig.m_SamplingFrequency,
+                    16,                    // sample size
+                    (AP4_UI16)m_DecConfig.m_ChannelConfiguration,
+                    &dsi,                  // decoder info
+                    6144,                  // buffer size
+                    128000,                // max bitrate
+                    128000);               // average bitrate
+                
+                m_Timescale = (AP4_UI32)m_DecConfig.m_SamplingFrequency;
+            }
             return AP4_SUCCESS;
         } else {
             return AP4_FAILURE;
