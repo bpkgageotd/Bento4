@@ -841,7 +841,7 @@ AP4_AacSegmentBuilder::Feed(const void* data,
     AP4_Result result;
     // First, get the DSI.
     if (!m_DsiReceived) {
-        if (data_size == 2) {
+        if (data_size >= 2) {
             m_DecConfig.Parse((AP4_UI08*) data, data_size);
             m_AdtsHeader.SetDataSize(7);
             auto aac_dsi = reinterpret_cast<char*>(m_AdtsHeader.UseData());
