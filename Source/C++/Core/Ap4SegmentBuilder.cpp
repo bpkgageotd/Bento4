@@ -849,7 +849,7 @@ AP4_AacSegmentBuilder::Feed(const void* data,
             aac_dsi[1] = 0xF1; // 0xF9 (MPEG2)
             aac_dsi[2] = 0x40 | (m_DecConfig.m_SamplingFrequencyIndex << 2) | (m_DecConfig.m_ChannelConfiguration >> 2);
             aac_dsi[6] = 0xFC;
-            bytes_consumed += 2;
+            bytes_consumed += data_size;
             m_DsiReceived = true;
             if (!m_SampleDescription) {
                 // create a sample description for our samples
